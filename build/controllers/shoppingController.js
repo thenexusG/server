@@ -16,42 +16,114 @@ const database_1 = __importDefault(require("../database"));
 class ShoppingController {
     getClothes(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const articles = yield database_1.default.query('SELECT * FROM mercancia');
-            res.json(articles);
+            try {
+                const query = 'SELECT * FROM mercancia;';
+                const articles = yield database_1.default.any(query);
+                res.json(articles);
+            }
+            catch (error) {
+                console.error('Error al obtener la lista de prendas:', error);
+                res.status(500).json({ error: 'Error interno del servidor' });
+            }
         });
     }
     createNewClothes(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield database_1.default.query('INSERT INTO mercancia SET ?', [req.body]);
-            res.json({ message: 'articulo guardado' });
+            const { nombre, talla, cantidad_existente, precio, imagen_base64 } = req.body;
+            try {
+                const query = `
+            INSERT INTO mercancia (nombre, talla, cantidad_existente, precio, imagen_base64)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *;`;
+                const values = [nombre, talla, cantidad_existente, precio, imagen_base64];
+                const result = yield database_1.default.one(query, values);
+                res.json({ message: 'Artículo guardado', data: result });
+            }
+            catch (error) {
+                console.error('Error al guardar el artículo:', error);
+                res.status(500).json({ error: 'Error interno del servidor' });
+            }
         });
     }
     updateClothes(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            yield database_1.default.query('UPDATE mercancia SET ? WHERE id = ?', [req.body, id]);
-            res.json({ message: 'Clothing has been successfully updated' });
+            const { nombre, categoria, cantidad_existente, precio, imagen_base64 } = req.body;
+            try {
+                const query = `
+            UPDATE mercancia
+            SET nombre = $1, categoria = $2, cantidad_existente = $3, precio = $4, imagen_base64 = $5
+            WHERE id = $6
+            RETURNING *;`;
+                const values = [nombre, categoria, cantidad_existente, precio, imagen_base64, id];
+                const result = yield database_1.default.one(query, values);
+                res.json({ message: 'La prenda ha sido actualizada con éxito', data: result });
+            }
+            catch (error) {
+                console.error('Error al actualizar la prenda:', error);
+                res.status(500).json({ error: 'Error interno del servidor' });
+            }
         });
     }
     deleteClothes(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            yield database_1.default.query('DELETE FROM mercancia WHERE id = ?', [id]);
-            res.json({ message: 'Clothes have been disposed of correctly' });
+            try {
+                const query = 'DELETE FROM mercancia WHERE id = $1 RETURNING *;';
+                const result = yield database_1.default.oneOrNone(query, id);
+                if (result) {
+                    res.json({ message: 'La prenda ha sido eliminada correctamente', data: result });
+                }
+                else {
+                    res.status(404).json({ error: 'La prenda no fue encontrada' });
+                }
+            }
+            catch (error) {
+                console.error('Error al eliminar la prenda:', error);
+                res.status(500).json({ error: 'Error interno del servidor' });
+            }
         });
     }
     removeQuantityExisting(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const id = req.params.id;
-            yield database_1.default.query('UPDATE mercancia SET cantidad_existente = cantidad_existente - 1 WHERE id = ?', [id]);
-            res.json({ message: 'Clothing has been successfully updated - 1' });
+            const { id } = req.params;
+            try {
+                const query = `
+            UPDATE mercancia
+            SET cantidad_existente = cantidad_existente - 1
+            WHERE id = $1
+            RETURNING *;`;
+                const result = yield database_1.default.one(query, id);
+                if (result) {
+                    res.json({ message: 'La prenda ha sido actualizada exitosamente - 1', data: result });
+                }
+                else {
+                    res.status(404).json({ error: 'La prenda no fue encontrada' });
+                }
+            }
+            catch (error) {
+                console.error('Error al actualizar la prenda:', error);
+                res.status(500).json({ error: 'Error interno del servidor' });
+            }
         });
     }
     getClothesExisting(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const id = req.params.id;
-            const articles = yield database_1.default.query('SELECT cantidad_existente FROM mercancia WHERE id = ?', [id]);
-            res.json(articles);
+            const { id } = req.params;
+            try {
+                const query = 'SELECT cantidad_existente FROM mercancia WHERE id = $1;';
+                const result = yield database_1.default.oneOrNone(query, id);
+                if (result) {
+                    res.json(result);
+                }
+                else {
+                    res.status(404).json({ error: 'La prenda no fue encontrada' });
+                }
+            }
+            catch (error) {
+                console.error('Error al obtener la cantidad existente:', error);
+                res.status(500).json({ error: 'Error interno del servidor' });
+            }
         });
     }
 }

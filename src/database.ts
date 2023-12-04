@@ -1,12 +1,14 @@
-import mysql from 'promise-mysql';
+import pgPromise from 'pg-promise';
 
-import keys from './keys';
+const pgp = pgPromise();
+const connection =  process.env.DATABASE_URL || {
+    host: 'localhost',
+    port: 5432, // Puerto predeterminado para PostgreSQL
+    user: 'postgres',
+    password: 'uriloco989',
+    database: 'ng_onlineShop'
+};
 
-const pool = mysql.createPool(keys.database);
+const db = pgp(connection);
 
-pool.getConnection().then(connection => {
-        pool.releaseConnection(connection);
-        console.log("DB is connected");
-    });
-
-export default pool;
+export default db;
