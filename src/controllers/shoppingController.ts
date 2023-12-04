@@ -26,6 +26,17 @@ class ShoppingController{
         res.json({message: 'Clothes have been disposed of correctly'});
     }
 
+    public async removeQuantityExisting(req: Request, res: Response): Promise<any> {
+        const id = req.params.id;
+        await pool.query('UPDATE mercancia SET cantidad_existente = cantidad_existente - 1 WHERE id = ?', [id]);
+        res.json({ message: 'Clothing has been successfully updated - 1' });
+      }
+
+    public async getClothesExisting(req: Request, res: Response): Promise<any> {
+        const id = req.params.id;
+        const articles = await pool.query('SELECT cantidad_existente FROM mercancia WHERE id = ?', [id]);
+        res.json(articles);
+    }
 }
 
 

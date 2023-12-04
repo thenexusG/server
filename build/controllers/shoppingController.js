@@ -40,6 +40,20 @@ class ShoppingController {
             res.json({ message: 'Clothes have been disposed of correctly' });
         });
     }
+    removeQuantityExisting(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const id = req.params.id;
+            yield database_1.default.query('UPDATE mercancia SET cantidad_existente = cantidad_existente - 1 WHERE id = ?', [id]);
+            res.json({ message: 'Clothing has been successfully updated - 1' });
+        });
+    }
+    getClothesExisting(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const id = req.params.id;
+            const articles = yield database_1.default.query('SELECT cantidad_existente FROM mercancia WHERE id = ?', [id]);
+            res.json(articles);
+        });
+    }
 }
 const shoppingController = new ShoppingController();
 exports.default = shoppingController;

@@ -14,6 +14,8 @@ class ShoppingRoutes{
         this.router.get('/', shoppingController.getClothes);
         this.router.post('/', shoppingController.createNewClothes);
         this.router.delete('/:id', shoppingController.deleteClothes);
+        this.router.put('/existing/:id', shoppingController.removeQuantityExisting);
+        this.router.get('/existing/:id', shoppingController.getClothesExisting);
         this.router.put('/:id', shoppingController.updateClothes);
     }
 }

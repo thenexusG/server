@@ -22,6 +22,10 @@ class Server {
         this.app.use(cors());
         this.app.use(express.json());
         this.app.use(express.urlencoded({extended: false}));
+        this.app.use((err: any, req: any, res: any, next: any) => {
+            console.error(err.stack);
+            res.status(500).send('Algo salió mal!');
+          });
     }
 
     routes(): void{
